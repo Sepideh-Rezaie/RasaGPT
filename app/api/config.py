@@ -25,8 +25,7 @@ if not env:
     if os.path.exists(env_file):
         load_dotenv(dotenv_path=env_file)
     else:
-        raise Exception(f"Env file {env})file not found")
-
+        raise Exception(f"Env file {env_file} not found")
 # -----------------------
 # Configuration constants
 # -----------------------
@@ -34,11 +33,12 @@ readme_file = Path(__file__).parent / "API.md"
 
 readme_str = (
     f"""
-<details>
-    <summary>📕 API.MD</summary>
-{readme_file.read_text()}
 
-</details>
+    📕 API.MD {readme_file.read_text(encoding='utf-8')}
+
+    """
+    if readme_file.exists() else ""
+)
 
 """
     if readme_file.exists()
@@ -47,25 +47,27 @@ readme_str = (
 APP_NAME = "API Documentation"
 APP_VERSION = "0.0.1"
 APP_DESCRIPTION = f"""
-![img](/static/img/rasagpt-logo-1.png)
+[img](/static/img/rasagpt-logo-1.png)
 
 ---
-## About
+# About
 💬 RasaGPT is the first headless LLM chatbot platform built on top of Rasa and Langchain
 
-- 📚 Resources: [https://rasagpt.dev](https://rasagpt.dev)
-- 🧑‍💻 Github: [https://github.com/paulpierre/RasaGPT](https://github.com/paulpierre/RasaGPT)
-- 🧙 Author: [@paulpierre](https://twitter.com/paulpierre)
+- 📚 Resources: [https://rasagpt.dev](https: // rasagpt.dev)
+- 🧑‍💻 Github: [https://github.com/paulpierre/RasaGPT](https: // github.com/paulpierre/RasaGPT)
+- 🧙 Author: [@paulpierre](https: // twitter.com/paulpierre)
 
 {readme_str}
 """
-APP_ICON = "/public/img/rasagpt-icon-200x200.png"
-APP_LOGO = "/public/img/rasagpt-logo-1.png"
+APP_ICON = "/static/img/rasagpt--200x200.png"
+APP_LOGO = "/static/img/rasagpt-logo-1.png"
 
 FILE_UPLOAD_PATH = os.getenv("FILE_UPLOAD_PATH", "/tmp")
 
 # Database configurations
 POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
+if not POSTGRES_USER:
+    raise ValueError("POSTGRES_USER not set in .env")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres")
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", 5432)
@@ -133,7 +135,8 @@ VECTOR_EMBEDDINGS_COUNT = 1536
 PGVECTOR_ADD_INDEX = True if os.getenv("PGVECTOR_ADD_INDEX", False) else False
 # Model constants
 
-DOCUMENT_TYPE = IntEnum("DOCUMENT_TYPE", ["PLAINTEXT", "MARKDOWN", "HTML", "PDF"])
+DOCUMENT_TYPE = IntEnum(
+    "DOCUMENT_TYPE", ["PLAINTEXT", "MARKDOWN", "HTML", "PDF"])
 
 ENTITY_STATUS = IntEnum(
     "ENTITY_STATUS",

@@ -8,5 +8,5 @@ SQLAlchemy
 pgvector
 tiktoken
 aiofiles
-sqlmodel
+sqlmodel==0.0.8
 openai

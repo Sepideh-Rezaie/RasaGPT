@@ -1,14 +1,5 @@
-from fastapi import (
-    FastAPI,
-    File,
-    Depends,
-    HTTPException,
-    UploadFile
-)
 from fastapi.openapi.utils import get_openapi
-from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
-
 from typing import (
     List,
     Optional,
@@ -21,17 +12,9 @@ import aiohttp
 import time
 import json
 import os
-
-# -----------
-# LLM imports
-# -----------
 from llm import (
     chat_query
 )
-
-# ----------------
-# Database imports
-# ----------------
 from models import (
     # ---------------
     # Database Models
@@ -79,9 +62,6 @@ from util import (
     is_uuid,
     logger
 )
-# -----------
-# LLM imports
-# -----------
 from config import (
     APP_NAME,
     APP_VERSION,
@@ -96,6 +76,28 @@ from config import (
     FILE_UPLOAD_PATH,
     RASA_WEBHOOK_URL
 )
+from fastapi.staticfiles import StaticFiles
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+app.mount("/static", StaticFiles(directory="static"), name="static")(
+    FastAPI,
+    File,
+    Depends,
+    HTTPException,
+    UploadFile
+)
+
+
+# -----------
+# LLM imports
+# -----------
+
+# ----------------
+# Database imports
+# ----------------
+# -----------
+# LLM imports
+# -----------
 
 
 # ------------------
@@ -110,6 +112,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # ---------------------
 # Health check endpoint
 # ---------------------
+
+
 @app.get("/health", include_in_schema=False)
 def health_check():
     return {'status': 'ok'}
@@ -132,7 +136,8 @@ def read_organizations():
 
     '''
     with Session(get_engine()) as session:
-        orgs = session.exec(select(Organization).where(Organization.status == ENTITY_STATUS.ACTIVE.value)).all()
+        orgs = session.exec(select(Organization).where(
+            Organization.status == ENTITY_STATUS.ACTIVE.value)).all()
         return orgs
 
 
@@ -190,7 +195,8 @@ def read_organization(
     organization_id: str
 ):
 
-    organization = get_org_by_uuid_or_namespace(organization_id, session=session)
+    organization = get_org_by_uuid_or_namespace(
+        organization_id, session=session)
 
     return organization
 
@@ -226,10 +232,12 @@ def read_projects(
     organization_id: str
 ):
 
-    organization = get_org_by_uuid_or_namespace(organization_id, session=session)
+    organization = get_org_by_uuid_or_namespace(
+        organization_id, session=session)
 
     if not organization.projects:
-        raise HTTPException(status_code=404, detail='No projects found for organization')
+        raise HTTPException(
+            status_code=404, detail='No projects found for organization')
 
     return organization.projects
 
@@ -282,9 +290,12 @@ async def upload_document(
     file: Optional[UploadFile] = File(...),
     overwrite: Optional[bool] = True
 ):
-    organization = get_org_by_uuid_or_namespace(organization_id, session=session)
-    project = get_project_by_uuid(uuid=project_id, organization_id=organization_id, session=session)
-    file_root_path = os.path.join(FILE_UPLOAD_PATH, str(organization.uuid), str(project.uuid))
+    organization = get_org_by_uuid_or_namespace(
+        organization_id, session=session)
+    project = get_project_by_uuid(
+        uuid=project_id, organization_id=organization_id, session=session)
+    file_root_path = os.path.join(FILE_UPLOAD_PATH, str(
+        organization.uuid), str(project.uuid))
 
     file_version = 1
 
@@ -292,7 +303,8 @@ async def upload_document(
     # Enforce XOR for url/file
     # ------------------------
     if url and file:
-        raise HTTPException(status_code=400, detail='You can only upload a file OR provide a URL, not both')
+        raise HTTPException(
+            status_code=400, detail='You can only upload a file OR provide a URL, not both')
 
     # --------------------
     # Upload file from URL
@@ -309,7 +321,8 @@ async def upload_document(
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 if resp.status != 200:
-                    raise HTTPException(status_code=400, detail=f'Could not download file from {url}')
+                    raise HTTPException(
+                        status_code=400, detail=f'Could not download file from {url}')
 
                 with open(file_upload_path, 'wb') as f:
                     while True:
@@ -365,6 +378,8 @@ def read_documents(
 # ----------------------
 # Get a document by UUID
 # ----------------------
+
+
 @app.get("/document/{document_id}", response_model=DocumentRead)
 def read_document(
     *,
@@ -436,7 +451,8 @@ def update_user(*, user_uuid: str, user: UserUpdate):
 
     # If user doesn't exist, return 404
     else:
-        raise HTTPException(status_code=404, detail=f'User {user_uuid} not found!')
+        raise HTTPException(
+            status_code=404, detail=f'User {user_uuid} not found!')
 
 
 # =============
@@ -517,7 +533,8 @@ def get_webhook(
         user_message = data['user_message']
     else:
         # Not a valid channel, return 404
-        raise HTTPException(status_code=404, detail=f'Channel {channel} not a valid webhook channel!')
+        raise HTTPException(
+            status_code=404, detail=f'Channel {channel} not a valid webhook channel!')
 
     chat_session = chat_query(
         user_message,
@@ -545,7 +562,8 @@ def get_webhook(
     # Forward the webhook to Rasa webhook
     # -----------------------------------
     res = requests.post(rasa_webhook_url, data=json.dumps(webhook_data))
-    logger.debug(f'[🤖 RasaGPT API webhook]\nPosting data: {json.dumps(webhook_data)}\n\n[🤖 RasaGPT API webhook]\nRasa webhook response: {res.text}')
+    logger.debug(
+        f'[🤖 RasaGPT API webhook]\nPosting data: {json.dumps(webhook_data)}\n\n[🤖 RasaGPT API webhook]\nRasa webhook response: {res.text}')
 
     return {'status': 'ok'}
 
