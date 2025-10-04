@@ -5,9 +5,9 @@ import logging
 import sys
 import os
 
-# -------
+# --------
 # Logging
-# -------
+# --------
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
@@ -16,11 +16,11 @@ logger = logging.getLogger(__name__)
 # ----------------
 # Environment vars
 # ----------------
-env = os.getenv("ENV", None)
 
+env = os.getenv("ENV", None)
 if not env:
     # Check up to 2 levels up for .env-{env} file
-    env_file = Path(__file__).parent.parent.parent / '.env'
+    env_file = Path(__file__).parent.parent.parent / f'.env-{env or "default"}'
     logger.debug(f"Loading env file: {env_file}")
     if os.path.exists(env_file):
         load_dotenv(dotenv_path=env_file)
@@ -36,16 +36,14 @@ readme_str = (
 
     📕 API.MD {readme_file.read_text(encoding='utf-8')}
 
-    """
-    if readme_file.exists() else ""
-)
-
 """
     if readme_file.exists()
     else ""
 )
+
 APP_NAME = "API Documentation"
 APP_VERSION = "0.0.1"
+
 APP_DESCRIPTION = f"""
 [img](/static/img/rasagpt-logo-1.png)
 
@@ -53,9 +51,9 @@ APP_DESCRIPTION = f"""
 # About
 💬 RasaGPT is the first headless LLM chatbot platform built on top of Rasa and Langchain
 
-- 📚 Resources: [https://rasagpt.dev](https: // rasagpt.dev)
-- 🧑‍💻 Github: [https://github.com/paulpierre/RasaGPT](https: // github.com/paulpierre/RasaGPT)
-- 🧙 Author: [@paulpierre](https: // twitter.com/paulpierre)
+- 📚 Resources: [https://rasagpt.dev](https://rasagpt.dev)
+- 🧑‍💻 Github: [https://github.com/paulpierre/RasaGPT](https://github.com/paulpierre/RasaGPT)
+- 🧙 Author: [@paulpierre](https://twitter.com/paulpierre)
 
 {readme_str}
 """
